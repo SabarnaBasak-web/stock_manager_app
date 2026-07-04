@@ -1,15 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'database/app_database.dart';
 import 'screens/stock_shell.dart';
+import 'services/theme_preferences.dart';
 
-void main() {
-  runApp(const StockManagerApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final isDarkMode = await ThemePreferences.loadDarkMode();
+
+  runApp(StockManagerApp(initialDarkMode: isDarkMode));
 }
 
 class StockManagerApp extends StatefulWidget {
-  const StockManagerApp({super.key});
+  const StockManagerApp({required this.initialDarkMode, super.key});
+
+  final bool initialDarkMode;
 
   @override
   State<StockManagerApp> createState() => _StockManagerAppState();
@@ -17,12 +26,13 @@ class StockManagerApp extends StatefulWidget {
 
 class _StockManagerAppState extends State<StockManagerApp> {
   late final AppDatabase _database;
-  bool _isDarkMode = false;
+  late bool _isDarkMode;
 
   @override
   void initState() {
     super.initState();
     _database = AppDatabase();
+    _isDarkMode = widget.initialDarkMode;
   }
 
   @override
@@ -59,6 +69,7 @@ class _StockManagerAppState extends State<StockManagerApp> {
           setState(() {
             _isDarkMode = value;
           });
+          unawaited(ThemePreferences.saveDarkMode(value));
         },
       ),
     );
