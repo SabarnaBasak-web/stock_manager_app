@@ -4,6 +4,7 @@ import '../core/stock_colors.dart';
 import '../database/app_database.dart';
 import '../widgets/categories/category_group_card.dart';
 import '../widgets/categories/category_metric_card.dart';
+import '../widgets/categories/empty_categories.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({required this.database, super.key});
@@ -47,7 +48,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 ),
                 Expanded(
                   child: categoryGroups.isEmpty
-                      ? const _EmptyCategories()
+                      ? const EmptyCategories()
                       : ListView.separated(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 22),
                           itemCount: categoryGroups.length,
@@ -158,24 +159,6 @@ class _CategoriesHeader extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyCategories extends StatelessWidget {
-  const _EmptyCategories();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'No categories yet.',
-        style: TextStyle(
-          color: StockColors.muted,
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-        ),
       ),
     );
   }
