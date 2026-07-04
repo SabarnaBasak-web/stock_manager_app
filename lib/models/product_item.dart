@@ -1,0 +1,62 @@
+import '../database/app_database.dart';
+
+class ProductItem {
+  const ProductItem({
+    required this.name,
+    required this.category,
+    required this.icon,
+    required this.quantity,
+    required this.expiryText,
+    required this.status,
+    this.expiryLevel = ExpiryLevel.warning,
+  });
+
+  final String name;
+  final String category;
+  final String icon;
+  final int quantity;
+  final String expiryText;
+  final ProductStatus status;
+  final ExpiryLevel expiryLevel;
+
+  factory ProductItem.fromDatabase(ProductWithCategory productWithCategory) {
+    final product = productWithCategory.product;
+    final category = productWithCategory.category;
+    final daysUntilExpiry = product.expiryDate
+        .difference(DateTime.now())
+        .inDays;
+    final hasNoExpiryDate = product.expiryDate.year == 9999;
+
+    return ProductItem(
+      name: product.name,
+      category: category.name,
+      icon: category.icon,
+      quantity: product.quantity,
+      expiryText: hasNoExpiryDate
+          ? 'No expiry'
+          : _buildExpiryText(daysUntilExpiry),
+      status: product.quantity == 0
+          ? ProductStatus.outOfStock
+          : ProductStatus.inStock,
+      expiryLevel: !hasNoExpiryDate && daysUntilExpiry <= 3
+          ? ExpiryLevel.danger
+          : ExpiryLevel.warning,
+    );
+  }
+}
+
+enum ProductStatus { inStock, outOfStock }
+
+enum ExpiryLevel { warning, danger }
+
+String _buildExpiryText(int daysUntilExpiry) {
+  if (daysUntilExpiry < 0) {
+    return 'Expired';
+  }
+
+  if (daysUntilExpiry == 0) {
+    return 'Exp. today';
+  }
+
+  return 'Exp. in ${daysUntilExpiry}d';
+}
