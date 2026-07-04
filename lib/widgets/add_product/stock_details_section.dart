@@ -66,11 +66,15 @@ class StockStatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F2F8),
+        color: isDarkTheme
+            ? Theme.of(context).colorScheme.surfaceContainerHighest
+            : const Color(0xFFF0F2F8),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -118,13 +122,17 @@ class UnitChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => onTap(),
       showCheckmark: false,
       selectedColor: StockColors.primary,
-      backgroundColor: const Color(0xFFF0F2F8),
+      backgroundColor: isDarkTheme
+          ? Theme.of(context).colorScheme.surfaceContainerHighest
+          : const Color(0xFFF0F2F8),
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : const Color(0xFF667096),
         fontSize: 12,

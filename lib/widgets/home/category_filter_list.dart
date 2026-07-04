@@ -17,6 +17,9 @@ class CategoryFilterList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       height: 36,
       child: ListView.separated(
@@ -32,12 +35,14 @@ class CategoryFilterList extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: isSelected ? StockColors.primary : Colors.white,
+                color: isSelected ? StockColors.primary : colorScheme.surface,
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: isSelected
                       ? StockColors.primary
-                      : const Color(0xFFE3E7F2),
+                      : isDarkTheme
+                          ? colorScheme.outlineVariant
+                          : const Color(0xFFE3E7F2),
                 ),
                 boxShadow: [
                   if (!isSelected)

@@ -14,12 +14,15 @@ class StockBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withValues(alpha: isDarkTheme ? 0.24 : 0.08),
             blurRadius: 14,
             offset: const Offset(0, -4),
           ),
@@ -31,7 +34,7 @@ class StockBottomNavigationBar extends StatelessWidget {
           currentIndex: currentIndex,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: colorScheme.surface,
           selectedItemColor: StockColors.primary,
           unselectedItemColor: const Color(0xFF97A0B8),
           selectedFontSize: 10,
@@ -81,7 +84,9 @@ class _NavIcon extends StatelessWidget {
       height: 42,
       width: 42,
       decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFECEFFF) : Colors.transparent,
+        color: isSelected
+            ? StockColors.primary.withValues(alpha: 0.12)
+            : Colors.transparent,
         shape: BoxShape.circle,
       ),
       child: Icon(icon),

@@ -95,6 +95,8 @@ class NoExpiryToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () => onChanged(!value),
@@ -102,7 +104,9 @@ class NoExpiryToggle extends StatelessWidget {
         height: 42,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFFF0F2F8),
+          color: isDarkTheme
+              ? Theme.of(context).colorScheme.surfaceContainerHighest
+              : const Color(0xFFF0F2F8),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(

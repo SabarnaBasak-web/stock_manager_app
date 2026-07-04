@@ -19,6 +19,8 @@ class CategoryGroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final category = categoryGroup.category;
     final productCount = categoryGroup.totalProducts;
     final inStockCount = categoryGroup.inStockProducts;
@@ -28,15 +30,20 @@ class CategoryGroupCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E8F1)),
+        border: Border.all(
+          color: isDarkTheme
+              ? colorScheme.outlineVariant
+              : const Color(0xFFE5E8F1),
+        ),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1B2444).withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          if (!isDarkTheme)
+            BoxShadow(
+              color: const Color(0xFF1B2444).withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -59,7 +66,6 @@ class CategoryGroupCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Color(0xFF0E1630),
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                           ),
@@ -92,7 +98,12 @@ class CategoryGroupCard extends StatelessWidget {
             ),
           ),
           if (isExpanded) ...[
-            const Divider(height: 1, color: Color(0xFFE5E8F1)),
+            Divider(
+              height: 1,
+              color: isDarkTheme
+                  ? colorScheme.outlineVariant
+                  : const Color(0xFFE5E8F1),
+            ),
             if (productItems.isEmpty)
               const Padding(
                 padding: EdgeInsets.all(16),

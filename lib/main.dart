@@ -17,6 +17,7 @@ class StockManagerApp extends StatefulWidget {
 
 class _StockManagerAppState extends State<StockManagerApp> {
   late final AppDatabase _database;
+  bool _isDarkMode = false;
 
   @override
   void initState() {
@@ -41,7 +42,25 @@ class _StockManagerAppState extends State<StockManagerApp> {
         textTheme: GoogleFonts.nunitoSansTextTheme(),
         scaffoldBackgroundColor: const Color(0xFFF4F6FB),
       ),
-      home: StockShell(database: _database),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF26379B),
+          brightness: Brightness.dark,
+        ),
+        textTheme: GoogleFonts.nunitoSansTextTheme(ThemeData.dark().textTheme),
+        scaffoldBackgroundColor: const Color(0xFF111827),
+      ),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: StockShell(
+        database: _database,
+        isDarkMode: _isDarkMode,
+        onDarkModeChanged: (value) {
+          setState(() {
+            _isDarkMode = value;
+          });
+        },
+      ),
     );
   }
 }

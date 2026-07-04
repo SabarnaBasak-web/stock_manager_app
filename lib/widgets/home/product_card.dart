@@ -10,20 +10,27 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isOutOfStock = product.status == ProductStatus.outOfStock;
 
     return Container(
       height: 98,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE7EAF2)),
+        border: Border.all(
+          color: isDarkTheme
+              ? colorScheme.outlineVariant
+              : const Color(0xFFE7EAF2),
+        ),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1B2444).withValues(alpha: 0.10),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
+          if (!isDarkTheme)
+            BoxShadow(
+              color: const Color(0xFF1B2444).withValues(alpha: 0.10),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -84,8 +91,8 @@ class _ProductTitle extends StatelessWidget {
           product.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF0E1630),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
             fontWeight: FontWeight.w900,
           ),

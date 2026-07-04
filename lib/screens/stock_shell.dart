@@ -5,11 +5,19 @@ import '../widgets/home/stock_bottom_navigation_bar.dart';
 import 'add_product_screen.dart';
 import 'categories_screen.dart';
 import 'home_screen.dart';
+import 'settings_screen.dart';
 
 class StockShell extends StatefulWidget {
-  const StockShell({required this.database, super.key});
+  const StockShell({
+    required this.database,
+    required this.isDarkMode,
+    required this.onDarkModeChanged,
+    super.key,
+  });
 
   final AppDatabase database;
+  final bool isDarkMode;
+  final ValueChanged<bool> onDarkModeChanged;
 
   @override
   State<StockShell> createState() => _StockShellState();
@@ -33,7 +41,10 @@ class _StockShellState extends State<StockShell> {
           HomeScreen(database: widget.database),
           AddProductScreen(database: widget.database),
           CategoriesScreen(database: widget.database),
-          const _ComingSoonScreen(title: 'Settings'),
+          SettingsScreen(
+            isDarkMode: widget.isDarkMode,
+            onDarkModeChanged: widget.onDarkModeChanged,
+          ),
         ],
       ),
       bottomNavigationBar: StockBottomNavigationBar(
@@ -43,26 +54,6 @@ class _StockShellState extends State<StockShell> {
             _selectedIndex = index;
           });
         },
-      ),
-    );
-  }
-}
-
-class _ComingSoonScreen extends StatelessWidget {
-  const _ComingSoonScreen({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Text(
-            '$title screen coming soon',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
       ),
     );
   }

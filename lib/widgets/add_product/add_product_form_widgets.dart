@@ -14,18 +14,26 @@ class AddProductSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E8F1)),
+        border: Border.all(
+          color: isDarkTheme
+              ? colorScheme.outlineVariant
+              : const Color(0xFFE5E8F1),
+        ),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1B2444).withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          if (!isDarkTheme)
+            BoxShadow(
+              color: const Color(0xFF1B2444).withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
         ],
       ),
       child: Column(

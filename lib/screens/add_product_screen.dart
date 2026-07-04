@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../core/stock_colors.dart';
 import '../database/app_database.dart';
 import '../widgets/add_product/add_product_form_widgets.dart';
 import '../widgets/add_product/add_product_header.dart';
@@ -115,7 +114,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: StockColors.scaffold,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: Column(
