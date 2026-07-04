@@ -67,6 +67,35 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  Stream<StockMetrics> watchStockMetrics() {
+    return select(products).watch().map((productList) {
+      final today = DateTime.now();
+      final todayStart = DateTime(today.year, today.month, today.day);
+      final expirySoonEnd = todayStart.add(const Duration(days: 4));
+
+      final expiringSoonCount = productList.where((product) {
+        final expiryDate = product.expiryDate;
+        final expiryDay = DateTime(
+          expiryDate.year,
+          expiryDate.month,
+          expiryDate.day,
+        );
+
+        return expiryDate.year != 9999 &&
+            !expiryDay.isBefore(todayStart) &&
+            expiryDay.isBefore(expirySoonEnd);
+      }).length;
+
+      return StockMetrics(
+        totalProducts: productList.length,
+        outOfStockProducts: productList
+            .where((product) => product.quantity == 0)
+            .length,
+        expiringSoonProducts: expiringSoonCount,
+      );
+    });
+  }
+
   Future<void> seedDefaultCategories() async {
     await transaction(() async {
       final existingCategories = await select(categories).get();
@@ -105,4 +134,16 @@ class ProductWithCategory {
 
   final Product product;
   final Category category;
+}
+
+class StockMetrics {
+  const StockMetrics({
+    required this.totalProducts,
+    required this.outOfStockProducts,
+    required this.expiringSoonProducts,
+  });
+
+  final int totalProducts;
+  final int outOfStockProducts;
+  final int expiringSoonProducts;
 }
