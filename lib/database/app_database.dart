@@ -96,6 +96,45 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  Stream<List<CategoryWithProducts>> watchCategoriesWithProducts() {
+    final query = select(categories).join([
+      leftOuterJoin(products, products.categoryId.equalsExp(categories.id)),
+    ])
+      ..orderBy([
+        OrderingTerm.asc(categories.name),
+        OrderingTerm.desc(products.id),
+      ]);
+
+    return query.watch().map((rows) {
+      final categoriesById = <int, CategoryWithProducts>{};
+
+      for (final row in rows) {
+        final category = row.readTable(categories);
+        final product = row.readTableOrNull(products);
+        final existingCategory = categoriesById[category.id];
+
+        if (existingCategory == null) {
+          categoriesById[category.id] = CategoryWithProducts(
+            category: category,
+            products: [
+              if (product != null)
+                ProductWithCategory(product: product, category: category),
+            ],
+          );
+          continue;
+        }
+
+        if (product != null) {
+          existingCategory.products.add(
+            ProductWithCategory(product: product, category: category),
+          );
+        }
+      }
+
+      return categoriesById.values.toList();
+    });
+  }
+
   Future<void> seedDefaultCategories() async {
     await transaction(() async {
       final existingCategories = await select(categories).get();
@@ -146,4 +185,22 @@ class StockMetrics {
   final int totalProducts;
   final int outOfStockProducts;
   final int expiringSoonProducts;
+}
+
+class CategoryWithProducts {
+  CategoryWithProducts({
+    required this.category,
+    required this.products,
+  });
+
+  final Category category;
+  final List<ProductWithCategory> products;
+
+  int get totalProducts => products.length;
+
+  int get inStockProducts {
+    return products
+        .where((productRow) => productRow.product.quantity > 0)
+        .length;
+  }
 }

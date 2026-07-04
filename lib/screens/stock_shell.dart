@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../database/app_database.dart';
 import '../widgets/home/stock_bottom_navigation_bar.dart';
 import 'add_product_screen.dart';
+import 'categories_screen.dart';
 import 'home_screen.dart';
 
 class StockShell extends StatefulWidget {
@@ -31,7 +32,7 @@ class _StockShellState extends State<StockShell> {
         children: [
           HomeScreen(database: widget.database),
           AddProductScreen(database: widget.database),
-          const _ComingSoonScreen(title: 'Categories'),
+          CategoriesScreen(database: widget.database),
           const _ComingSoonScreen(title: 'Settings'),
         ],
       ),
