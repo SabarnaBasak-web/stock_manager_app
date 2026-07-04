@@ -20,6 +20,49 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int? _selectedCategoryId;
 
+  Future<void> _incrementProduct(ProductItem product) {
+    return widget.database.updateProductQuantity(
+      productId: product.id,
+      quantity: product.quantity + 1,
+    );
+  }
+
+  Future<void> _decrementProduct(ProductItem product) async {
+    if (product.quantity > 1) {
+      await widget.database.updateProductQuantity(
+        productId: product.id,
+        quantity: product.quantity - 1,
+      );
+      return;
+    }
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete product?'),
+          content: Text(
+            '${product.name} will be removed from your inventory.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true) return;
+
+    await widget.database.deleteProduct(product.id);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,7 +139,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: ProductCard(product: products[index]),
+                        child: ProductCard(
+                          product: products[index],
+                          onIncrement: () => _incrementProduct(
+                            products[index],
+                          ),
+                          onDelete: () => _decrementProduct(products[index]),
+                        ),
                       );
                     },
                   );

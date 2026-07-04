@@ -2,6 +2,7 @@ import '../database/app_database.dart';
 
 class ProductItem {
   const ProductItem({
+    required this.id,
     required this.name,
     required this.category,
     required this.icon,
@@ -11,6 +12,7 @@ class ProductItem {
     this.expiryLevel = ExpiryLevel.warning,
   });
 
+  final int id;
   final String name;
   final String category;
   final String icon;
@@ -28,6 +30,7 @@ class ProductItem {
     final hasNoExpiryDate = product.expiryDate.year == 9999;
 
     return ProductItem(
+      id: product.id,
       name: product.name,
       category: category.name,
       icon: category.icon,

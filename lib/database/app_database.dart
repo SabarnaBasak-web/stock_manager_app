@@ -51,6 +51,19 @@ class AppDatabase extends _$AppDatabase {
     return into(products).insert(product);
   }
 
+  Future<void> updateProductQuantity({
+    required int productId,
+    required int quantity,
+  }) {
+    return (update(products)..where((product) => product.id.equals(productId)))
+        .write(ProductsCompanion(quantity: Value(quantity)));
+  }
+
+  Future<void> deleteProduct(int productId) {
+    return (delete(products)..where((product) => product.id.equals(productId)))
+        .go();
+  }
+
   Stream<List<ProductWithCategory>> watchProducts() {
     final query = select(products).join([
       innerJoin(categories, categories.id.equalsExp(products.categoryId)),

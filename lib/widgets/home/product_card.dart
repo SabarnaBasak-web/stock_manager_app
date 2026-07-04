@@ -4,15 +4,24 @@ import '../../core/stock_colors.dart';
 import '../../models/product_item.dart';
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({required this.product, super.key});
+  const ProductCard({
+    required this.product,
+    this.onIncrement,
+    this.onDelete,
+    super.key,
+  });
 
   final ProductItem product;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isOutOfStock = product.status == ProductStatus.outOfStock;
+    final onIncrement = this.onIncrement;
+    final onDelete = this.onDelete;
 
     return Container(
       height: 98,
@@ -49,17 +58,24 @@ class ProductCard extends StatelessWidget {
                       _ProductIcon(icon: product.icon),
                       const SizedBox(width: 10),
                       Expanded(child: _ProductTitle(product: product)),
-                      const _RoundActionButton(
-                        icon: Icons.add_rounded,
-                        backgroundColor: Color(0xFFEFF8EF),
-                        iconColor: StockColors.green,
-                      ),
-                      const SizedBox(width: 10),
-                      const _RoundActionButton(
-                        icon: Icons.delete_outline_rounded,
-                        backgroundColor: Color(0xFFFFF0F0),
-                        iconColor: StockColors.red,
-                      ),
+                      if (onIncrement != null) ...[
+                        _RoundActionButton(
+                          icon: Icons.add_rounded,
+                          tooltip: 'Increase quantity',
+                          backgroundColor: const Color(0xFFEFF8EF),
+                          iconColor: StockColors.green,
+                          onPressed: onIncrement,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      if (onDelete != null)
+                        _RoundActionButton(
+                          icon: Icons.delete_outline_rounded,
+                          tooltip: 'Decrease quantity',
+                          backgroundColor: const Color(0xFFFFF0F0),
+                          iconColor: StockColors.red,
+                          onPressed: onDelete,
+                        ),
                     ],
                   ),
                   const Spacer(),
@@ -177,21 +193,39 @@ class _ProductIcon extends StatelessWidget {
 class _RoundActionButton extends StatelessWidget {
   const _RoundActionButton({
     required this.icon,
+    required this.tooltip,
     required this.backgroundColor,
     required this.iconColor,
+    required this.onPressed,
   });
 
   final IconData icon;
+  final String tooltip;
   final Color backgroundColor;
   final Color iconColor;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 28,
-      width: 28,
-      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
-      child: Icon(icon, color: iconColor, size: 19),
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkResponse(
+          onTap: onPressed,
+          radius: 18,
+          customBorder: const CircleBorder(),
+          child: Container(
+            height: 28,
+            width: 28,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 19),
+          ),
+        ),
+      ),
     );
   }
 }
