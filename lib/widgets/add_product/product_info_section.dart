@@ -26,6 +26,10 @@ class ProductInfoSection extends StatelessWidget {
         TextFormField(
           controller: nameController,
           textInputAction: TextInputAction.next,
+          style: const TextStyle(
+            color: AddProductFormColors.inputText,
+            fontWeight: FontWeight.w700,
+          ),
           decoration: const AddProductInputDecoration(
             hintText: 'e.g. Cherry Tomatoes',
           ),
@@ -47,6 +51,13 @@ class ProductInfoSection extends StatelessWidget {
             return DropdownButtonFormField<int>(
               value: selectedCategoryId,
               isExpanded: true,
+              dropdownColor: AddProductFormColors.inputFill,
+              iconEnabledColor: AddProductFormColors.inputHint,
+              iconDisabledColor: AddProductFormColors.inputHint,
+              style: const TextStyle(
+                color: AddProductFormColors.inputText,
+                fontWeight: FontWeight.w700,
+              ),
               decoration: const AddProductInputDecoration(
                 hintText: 'Select category...',
               ),

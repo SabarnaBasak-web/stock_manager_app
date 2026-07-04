@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-import '../core/stock_colors.dart';
 import '../database/app_database.dart';
 import '../models/category_filter.dart';
 import '../models/product_item.dart';
 import '../widgets/home/category_filter_list.dart';
+import '../widgets/home/empty_products.dart';
 import '../widgets/home/product_card.dart';
 import '../widgets/home/stock_header.dart';
 
@@ -18,7 +20,40 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const _searchDebounceDuration = Duration(milliseconds: 300);
+
+  final _searchController = TextEditingController();
+  Timer? _searchDebounce;
+
   int? _selectedCategoryId;
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _updateSearchQuery(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(_searchDebounceDuration, () {
+      if (!mounted) return;
+
+      setState(() {
+        _searchQuery = value;
+      });
+    });
+  }
+
+  void _clearSearchQuery() {
+    _searchDebounce?.cancel();
+    _searchController.clear();
+
+    setState(() {
+      _searchQuery = '';
+    });
+  }
 
   Future<void> _incrementProduct(ProductItem product) {
     return widget.database.updateProductQuantity(
@@ -73,6 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             StockHeader(
               stockMetricsStream: widget.database.watchStockMetrics(),
+              searchController: _searchController,
+              searchQuery: _searchQuery,
+              onSearchChanged: _updateSearchQuery,
+              onSearchCleared: _clearSearchQuery,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -117,19 +156,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   final productRows =
                       snapshot.data ?? const <ProductWithCategory>[];
+                  final normalizedSearchQuery = _searchQuery
+                      .trim()
+                      .toLowerCase();
                   final products = productRows
                       .where((productRow) {
                         final selectedCategoryId = _selectedCategoryId;
-
-                        return selectedCategoryId == null ||
+                        final matchesCategory =
+                            selectedCategoryId == null ||
                             productRow.category.id == selectedCategoryId;
+                        final matchesSearch =
+                            normalizedSearchQuery.isEmpty ||
+                            productRow.product.name.toLowerCase().contains(
+                              normalizedSearchQuery,
+                            );
+
+                        return matchesCategory && matchesSearch;
                       })
                       .map(ProductItem.fromDatabase)
                       .toList();
 
                   if (products.isEmpty) {
-                    return _EmptyProducts(
+                    return EmptyProducts(
                       hasCategoryFilter: _selectedCategoryId != null,
+                      hasSearchQuery: normalizedSearchQuery.isNotEmpty,
                     );
                   }
 
@@ -153,28 +203,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyProducts extends StatelessWidget {
-  const _EmptyProducts({required this.hasCategoryFilter});
-
-  final bool hasCategoryFilter;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        hasCategoryFilter
-            ? 'No products in this category yet.'
-            : 'No products yet. Tap Add to create one.',
-        style: const TextStyle(
-          color: StockColors.muted,
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
         ),
       ),
     );

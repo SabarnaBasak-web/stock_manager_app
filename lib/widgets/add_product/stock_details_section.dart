@@ -26,6 +26,10 @@ class StockDetailsSection extends StatelessWidget {
         TextFormField(
           controller: quantityController,
           keyboardType: TextInputType.number,
+          style: const TextStyle(
+            color: AddProductFormColors.inputText,
+            fontWeight: FontWeight.w700,
+          ),
           decoration: const AddProductInputDecoration(hintText: '0'),
           validator: (value) {
             final quantity = int.tryParse(value?.trim() ?? '');

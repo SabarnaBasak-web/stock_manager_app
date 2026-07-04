@@ -6,9 +6,20 @@ import '../../helper/date_helper.dart';
 import 'stock_metric_card.dart';
 
 class StockHeader extends StatelessWidget {
-  const StockHeader({required this.stockMetricsStream, super.key});
+  const StockHeader({
+    required this.stockMetricsStream,
+    required this.searchController,
+    required this.searchQuery,
+    required this.onSearchChanged,
+    required this.onSearchCleared,
+    super.key,
+  });
 
   final Stream<StockMetrics> stockMetricsStream;
+  final TextEditingController searchController;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onSearchCleared;
 
   @override
   Widget build(BuildContext context) {
@@ -139,18 +150,52 @@ class StockHeader extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.search_rounded, color: Color(0xFFCAD3FF), size: 22),
-                SizedBox(width: 10),
-                Text(
-                  'Search products...',
-                  style: TextStyle(
-                    color: Color(0xFFCAD3FF),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFFCAD3FF),
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: onSearchChanged,
+                    cursorColor: Colors.white,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Search products...',
+                      hintStyle: TextStyle(
+                        color: Color(0xFFCAD3FF),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                    ),
                   ),
                 ),
+                if (searchQuery.isNotEmpty)
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(
+                      height: 30,
+                      width: 30,
+                    ),
+                    tooltip: 'Clear search',
+                    onPressed: onSearchCleared,
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFFCAD3FF),
+                      size: 19,
+                    ),
+                  ),
               ],
             ),
           ),

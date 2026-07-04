@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/stock_colors.dart';
 
+class AddProductFormColors {
+  const AddProductFormColors._();
+
+  static const inputFill = Color(0xFFE8EAF1);
+  static const inputText = Color(0xFF212121);
+  static const inputHint = Color(0xFF7A8298);
+}
+
 class AddProductSectionCard extends StatelessWidget {
   const AddProductSectionCard({
     required this.title,
@@ -82,7 +90,7 @@ class AddProductInputDecoration extends InputDecoration {
     : super(
         hintText: hintText,
         filled: true,
-        fillColor: const Color(0xFFF0F2F8),
+        fillColor: AddProductFormColors.inputFill,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(14)),
           borderSide: BorderSide.none,
@@ -100,7 +108,7 @@ class AddProductInputDecoration extends InputDecoration {
           vertical: 14,
         ),
         hintStyle: const TextStyle(
-          color: Color(0xFFB1B8CC),
+          color: AddProductFormColors.inputHint,
           fontWeight: FontWeight.w700,
         ),
       );

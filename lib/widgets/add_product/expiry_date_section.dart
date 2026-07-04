@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/stock_colors.dart';
 import '../../helper/date_helper.dart';
 import 'add_product_form_widgets.dart';
 
@@ -63,17 +62,15 @@ class ExpiryDateField extends StatelessWidget {
             Expanded(
               child: Text(
                 expiryDate == null ? 'mm/dd/yyyy' : formatDate(expiryDate!),
-                style: TextStyle(
-                  color: expiryDate == null
-                      ? const Color(0xFF0E1630)
-                      : StockColors.primary,
+                style: const TextStyle(
+                  color: AddProductFormColors.inputText,
                   fontWeight: FontWeight.w800,
                 ),
               ),
             ),
             const Icon(
               Icons.calendar_today_outlined,
-              color: Colors.white,
+              color: AddProductFormColors.inputHint,
               size: 16,
             ),
           ],
