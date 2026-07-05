@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/app_info.dart';
 import '../core/stock_colors.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -22,14 +23,18 @@ class SettingsScreen extends StatelessWidget {
           children: [
             const _SettingsHeader(),
             Expanded(
-              child: ListView(
+              child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 22),
-                children: [
-                  _AppearanceCard(
-                    isDarkMode: isDarkMode,
-                    onDarkModeChanged: onDarkModeChanged,
-                  ),
-                ],
+                child: Column(
+                  children: [
+                    _AppearanceCard(
+                      isDarkMode: isDarkMode,
+                      onDarkModeChanged: onDarkModeChanged,
+                    ),
+                    const Spacer(),
+                    const _VersionFooter(),
+                  ],
+                ),
               ),
             ),
           ],
@@ -178,6 +183,39 @@ class _AppearanceCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _VersionFooter extends StatelessWidget {
+  const _VersionFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF8F98B5)
+        : const Color(0xFF97A0B8);
+
+    return Column(
+      children: [
+        Text(
+          'Stock Manager',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Version ${AppInfo.appVersion} (${AppInfo.buildNumber})',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }
