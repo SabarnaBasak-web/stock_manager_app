@@ -9,4 +9,17 @@ class StockColors {
   static const red = Color(0xFFFF4B4B);
   static const muted = Color(0xFF65708F);
   static const scaffold = Color(0xFFF4F6FB);
+
+  static Color fromHex(String hex) {
+    final normalizedHex = hex.replaceFirst('#', '');
+    final buffer = StringBuffer();
+
+    if (normalizedHex.length == 6) {
+      buffer.write('ff');
+    }
+
+    buffer.write(normalizedHex);
+
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
 }

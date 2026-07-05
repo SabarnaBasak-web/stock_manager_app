@@ -10,6 +10,7 @@ class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get icon => text()();
+  TextColumn get colorHex => text().withDefault(const Constant('#2E7D32'))();
 }
 
 class Products extends Table {
@@ -29,22 +30,45 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'stock_manager'));
 
   static const _defaultCategories = [
-    (name: 'Vegetables', icon: '🥦'),
-    (name: 'Groceries', icon: '🛒'),
-    (name: 'Makeup Essentials', icon: '💄'),
-    (name: 'Household Essentials', icon: '🏠'),
-    (name: 'Bath Essentials', icon: '🛀'),
-    (name: 'Clothes', icon: '👗'),
-    (name: 'Others', icon: '📦'),
+    (name: 'Vegetables', icon: '🥦', colorHex: '#2E7D32'),
+    (name: 'Groceries', icon: '🛒', colorHex: '#EF6C00'),
+    (name: 'Makeup Essentials', icon: '💄', colorHex: '#AD1457'),
+    (name: 'Household Essentials', icon: '🏠', colorHex: '#4527A0'),
+    (name: 'Bath Essentials', icon: '🛀', colorHex: '#00695C'),
+    (name: 'Clothes', icon: '👗', colorHex: '#1565C0'),
+    (name: 'Others', icon: '📦', colorHex: '#607D8B'),
   ];
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.addColumn(categories, categories.colorHex);
+      }
+    },
+  );
 
   Stream<List<Category>> watchCategories() {
     return (select(
       categories,
     )..orderBy([(category) => OrderingTerm.asc(category.name)])).watch();
+  }
+
+  Future<int> addCategory({
+    required String name,
+    required String icon,
+    required String colorHex,
+  }) {
+    return into(categories).insert(
+      CategoriesCompanion(
+        name: Value(name),
+        icon: Value(icon),
+        colorHex: Value(colorHex),
+      ),
+    );
   }
 
   Future<int> addProduct(ProductsCompanion product) {
@@ -62,6 +86,22 @@ class AppDatabase extends _$AppDatabase {
   Future<void> deleteProduct(int productId) {
     return (delete(products)..where((product) => product.id.equals(productId)))
         .go();
+  }
+
+  Future<bool> deleteCategory(int categoryId) async {
+    final existingProducts =
+        await (select(
+          products,
+        )..where((product) => product.categoryId.equals(categoryId))).get();
+
+    if (existingProducts.isNotEmpty) {
+      return false;
+    }
+
+    await (delete(
+      categories,
+    )..where((category) => category.id.equals(categoryId))).go();
+    return true;
   }
 
   Stream<List<ProductWithCategory>> watchProducts() {
@@ -160,18 +200,25 @@ class AppDatabase extends _$AppDatabase {
 
         if (existingCategory == null) {
           await into(categories).insert(
-            CategoriesCompanion.insert(
-              name: category.name,
-              icon: category.icon,
+            CategoriesCompanion(
+              name: Value(category.name),
+              icon: Value(category.icon),
+              colorHex: Value(category.colorHex),
             ),
           );
           continue;
         }
 
-        if (existingCategory.icon != category.icon) {
+        if (existingCategory.icon != category.icon ||
+            existingCategory.colorHex != category.colorHex) {
           await (update(categories)
                 ..where((table) => table.id.equals(existingCategory.id)))
-              .write(CategoriesCompanion(icon: Value(category.icon)));
+              .write(
+                CategoriesCompanion(
+                  icon: Value(category.icon),
+                  colorHex: Value(category.colorHex),
+                ),
+              );
         }
       }
     });

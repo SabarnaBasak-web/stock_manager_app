@@ -40,8 +40,20 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _colorHexMeta = const VerificationMeta(
+    'colorHex',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, icon];
+  late final GeneratedColumn<String> colorHex = GeneratedColumn<String>(
+    'color_hex',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('#2E7D32'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, icon, colorHex];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -73,6 +85,12 @@ class $CategoriesTable extends Categories
     } else if (isInserting) {
       context.missing(_iconMeta);
     }
+    if (data.containsKey('color_hex')) {
+      context.handle(
+        _colorHexMeta,
+        colorHex.isAcceptableOrUnknown(data['color_hex']!, _colorHexMeta),
+      );
+    }
     return context;
   }
 
@@ -94,6 +112,10 @@ class $CategoriesTable extends Categories
         DriftSqlType.string,
         data['${effectivePrefix}icon'],
       )!,
+      colorHex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color_hex'],
+      )!,
     );
   }
 
@@ -107,13 +129,20 @@ class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String name;
   final String icon;
-  const Category({required this.id, required this.name, required this.icon});
+  final String colorHex;
+  const Category({
+    required this.id,
+    required this.name,
+    required this.icon,
+    required this.colorHex,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['icon'] = Variable<String>(icon);
+    map['color_hex'] = Variable<String>(colorHex);
     return map;
   }
 
@@ -122,6 +151,7 @@ class Category extends DataClass implements Insertable<Category> {
       id: Value(id),
       name: Value(name),
       icon: Value(icon),
+      colorHex: Value(colorHex),
     );
   }
 
@@ -134,6 +164,7 @@ class Category extends DataClass implements Insertable<Category> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       icon: serializer.fromJson<String>(json['icon']),
+      colorHex: serializer.fromJson<String>(json['colorHex']),
     );
   }
   @override
@@ -143,19 +174,23 @@ class Category extends DataClass implements Insertable<Category> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'icon': serializer.toJson<String>(icon),
+      'colorHex': serializer.toJson<String>(colorHex),
     };
   }
 
-  Category copyWith({int? id, String? name, String? icon}) => Category(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    icon: icon ?? this.icon,
-  );
+  Category copyWith({int? id, String? name, String? icon, String? colorHex}) =>
+      Category(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        icon: icon ?? this.icon,
+        colorHex: colorHex ?? this.colorHex,
+      );
   Category copyWithCompanion(CategoriesCompanion data) {
     return Category(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       icon: data.icon.present ? data.icon.value : this.icon,
+      colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
     );
   }
 
@@ -164,46 +199,53 @@ class Category extends DataClass implements Insertable<Category> {
     return (StringBuffer('Category(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('icon: $icon')
+          ..write('icon: $icon, ')
+          ..write('colorHex: $colorHex')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, icon);
+  int get hashCode => Object.hash(id, name, icon, colorHex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
           other.name == this.name &&
-          other.icon == this.icon);
+          other.icon == this.icon &&
+          other.colorHex == this.colorHex);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> name;
   final Value<String> icon;
+  final Value<String> colorHex;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.icon = const Value.absent(),
+    this.colorHex = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     required String icon,
+    this.colorHex = const Value.absent(),
   }) : name = Value(name),
        icon = Value(icon);
   static Insertable<Category> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? icon,
+    Expression<String>? colorHex,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (icon != null) 'icon': icon,
+      if (colorHex != null) 'color_hex': colorHex,
     });
   }
 
@@ -211,11 +253,13 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Value<int>? id,
     Value<String>? name,
     Value<String>? icon,
+    Value<String>? colorHex,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       icon: icon ?? this.icon,
+      colorHex: colorHex ?? this.colorHex,
     );
   }
 
@@ -231,6 +275,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (icon.present) {
       map['icon'] = Variable<String>(icon.value);
     }
+    if (colorHex.present) {
+      map['color_hex'] = Variable<String>(colorHex.value);
+    }
     return map;
   }
 
@@ -239,7 +286,8 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     return (StringBuffer('CategoriesCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('icon: $icon')
+          ..write('icon: $icon, ')
+          ..write('colorHex: $colorHex')
           ..write(')'))
         .toString();
   }
@@ -618,12 +666,14 @@ typedef $$CategoriesTableCreateCompanionBuilder =
       Value<int> id,
       required String name,
       required String icon,
+      Value<String> colorHex,
     });
 typedef $$CategoriesTableUpdateCompanionBuilder =
     CategoriesCompanion Function({
       Value<int> id,
       Value<String> name,
       Value<String> icon,
+      Value<String> colorHex,
     });
 
 final class $$CategoriesTableReferences
@@ -671,6 +721,11 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<String> get icon => $composableBuilder(
     column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -723,6 +778,11 @@ class $$CategoriesTableOrderingComposer
     column: $table.icon,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CategoriesTableAnnotationComposer
@@ -742,6 +802,9 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get icon =>
       $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<String> get colorHex =>
+      $composableBuilder(column: $table.colorHex, builder: (column) => column);
 
   Expression<T> productsRefs<T extends Object>(
     Expression<T> Function($$ProductsTableAnnotationComposer a) f,
@@ -800,13 +863,25 @@ class $$CategoriesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> icon = const Value.absent(),
-              }) => CategoriesCompanion(id: id, name: name, icon: icon),
+                Value<String> colorHex = const Value.absent(),
+              }) => CategoriesCompanion(
+                id: id,
+                name: name,
+                icon: icon,
+                colorHex: colorHex,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
                 required String icon,
-              }) => CategoriesCompanion.insert(id: id, name: name, icon: icon),
+                Value<String> colorHex = const Value.absent(),
+              }) => CategoriesCompanion.insert(
+                id: id,
+                name: name,
+                icon: icon,
+                colorHex: colorHex,
+              ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (

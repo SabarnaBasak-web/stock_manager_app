@@ -10,12 +10,14 @@ class CategoryGroupCard extends StatelessWidget {
     required this.categoryGroup,
     required this.isExpanded,
     required this.onToggle,
+    required this.onDelete,
     super.key,
   });
 
   final CategoryWithProducts categoryGroup;
   final bool isExpanded;
   final VoidCallback onToggle;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,7 @@ class CategoryGroupCard extends StatelessWidget {
     final category = categoryGroup.category;
     final productCount = categoryGroup.totalProducts;
     final inStockCount = categoryGroup.inStockProducts;
+    final accentColor = StockColors.fromHex(category.colorHex);
     final productItems = categoryGroup.products
         .map(ProductItem.fromDatabase)
         .toList();
@@ -31,71 +34,100 @@ class CategoryGroupCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isDarkTheme
               ? colorScheme.outlineVariant
-              : const Color(0xFFE5E8F1),
+              : const Color(0xFFDCE2F1),
         ),
         boxShadow: [
           if (!isDarkTheme)
             BoxShadow(
               color: const Color(0xFF1B2444).withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
             ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          InkWell(
-            onTap: onToggle,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
-              child: Row(
-                children: [
-                  _CategoryIcon(icon: category.icon),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: onToggle,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+                    child: Row(
                       children: [
-                        Text(
-                          category.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
+                        _CategoryIcon(
+                          icon: category.icon,
+                          accentColor: accentColor,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                category.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xFF101A42),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '$productCount products · $inStockCount in stock',
+                                style: const TextStyle(
+                                  color: StockColors.muted,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          '$productCount products · $inStockCount in stock',
-                          style: const TextStyle(
-                            color: StockColors.muted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        const SizedBox(width: 10),
+                        _StockProgress(
+                          total: productCount,
+                          inStock: inStockCount,
+                          accentColor: accentColor,
+                        ),
+                        const SizedBox(width: 12),
+                        Icon(
+                          isExpanded
+                              ? Icons.keyboard_arrow_down_rounded
+                              : Icons.chevron_right_rounded,
+                          color: const Color(0xFF6C78A0),
                         ),
                       ],
                     ),
                   ),
-                  _StockProgress(
-                    total: productCount,
-                    inStock: inStockCount,
-                  ),
-                  const SizedBox(width: 12),
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: StockColors.muted,
-                  ),
-                ],
+                ),
               ),
-            ),
+              Container(
+                width: 1,
+                height: 72,
+                color: isDarkTheme
+                    ? colorScheme.outlineVariant
+                    : const Color(0xFFDCE2F1),
+              ),
+              SizedBox(
+                width: 56,
+                child: IconButton(
+                  onPressed: onDelete,
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: StockColors.red,
+                  ),
+                ),
+              ),
+            ],
           ),
           if (isExpanded) ...[
             Divider(
@@ -136,17 +168,18 @@ class CategoryGroupCard extends StatelessWidget {
 }
 
 class _CategoryIcon extends StatelessWidget {
-  const _CategoryIcon({required this.icon});
+  const _CategoryIcon({required this.icon, required this.accentColor});
 
   final String icon;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 40,
       width: 40,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF0F7EF),
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.10),
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
@@ -156,24 +189,29 @@ class _CategoryIcon extends StatelessWidget {
 }
 
 class _StockProgress extends StatelessWidget {
-  const _StockProgress({required this.total, required this.inStock});
+  const _StockProgress({
+    required this.total,
+    required this.inStock,
+    required this.accentColor,
+  });
 
   final int total;
   final int inStock;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
     final progress = total == 0 ? 0.0 : inStock / total;
 
     return SizedBox(
-      width: 56,
+      width: 48,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(999),
         child: LinearProgressIndicator(
           minHeight: 5,
           value: progress,
           backgroundColor: const Color(0xFFE2E6EF),
-          valueColor: const AlwaysStoppedAnimation<Color>(StockColors.green),
+          valueColor: AlwaysStoppedAnimation<Color>(accentColor),
         ),
       ),
     );

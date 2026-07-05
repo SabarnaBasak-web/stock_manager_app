@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/stock_colors.dart';
 import '../database/app_database.dart';
+import '../widgets/categories/add_category_sheet.dart';
 import '../widgets/categories/category_group_card.dart';
 import '../widgets/categories/category_metric_card.dart';
 import '../widgets/categories/empty_categories.dart';
@@ -17,7 +18,49 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   final _expandedCategoryIds = <int>{};
-  bool _hasToggledCategory = false;
+
+  Future<void> _showAddCategorySheet() async {
+    final result = await showAddCategorySheet(context);
+
+    if (result == null) return;
+
+    try {
+      await widget.database.addCategory(
+        name: result.name,
+        icon: result.icon,
+        colorHex: result.colorHex,
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not add category. Please try again.')),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${result.name} category added.')),
+    );
+  }
+
+  Future<void> _deleteCategory(Category category) async {
+    final wasDeleted = await widget.database.deleteCategory(category.id);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          wasDeleted
+              ? '${category.name} category deleted.'
+              : 'Remove products from ${category.name} before deleting it.',
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,38 +90,41 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   inStockCount: totalInStock,
                 ),
                 Expanded(
-                  child: categoryGroups.isEmpty
-                      ? const EmptyCategories()
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 22),
-                          itemCount: categoryGroups.length,
-                          separatorBuilder: (_, _) {
-                            return const SizedBox(height: 12);
-                          },
-                          itemBuilder: (context, index) {
-                            final categoryGroup = categoryGroups[index];
-                            final categoryId = categoryGroup.category.id;
-                            final isExpanded =
-                                _expandedCategoryIds.contains(categoryId) ||
-                                (!_hasToggledCategory && index == 0);
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 22),
+                    children: [
+                      _AddCategoryButton(onTap: _showAddCategorySheet),
+                      const SizedBox(height: 14),
+                      if (categoryGroups.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 36),
+                          child: EmptyCategories(),
+                        )
+                      else
+                        for (final categoryGroup in categoryGroups) ...[
+                          CategoryGroupCard(
+                            categoryGroup: categoryGroup,
+                            isExpanded: _expandedCategoryIds.contains(
+                              categoryGroup.category.id,
+                            ),
+                            onToggle: () {
+                              final categoryId = categoryGroup.category.id;
 
-                            return CategoryGroupCard(
-                              categoryGroup: categoryGroup,
-                              isExpanded: isExpanded,
-                              onToggle: () {
-                                setState(() {
-                                  _hasToggledCategory = true;
-
-                                  if (isExpanded) {
-                                    _expandedCategoryIds.remove(categoryId);
-                                  } else {
-                                    _expandedCategoryIds.add(categoryId);
-                                  }
-                                });
-                              },
-                            );
-                          },
-                        ),
+                              setState(() {
+                                if (_expandedCategoryIds.contains(categoryId)) {
+                                  _expandedCategoryIds.remove(categoryId);
+                                } else {
+                                  _expandedCategoryIds.add(categoryId);
+                                }
+                              });
+                            },
+                            onDelete: () =>
+                                _deleteCategory(categoryGroup.category),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                    ],
+                  ),
                 ),
               ],
             );
@@ -161,5 +207,103 @@ class _CategoriesHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _AddCategoryButton extends StatelessWidget {
+  const _AddCategoryButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: CustomPaint(
+          foregroundPainter: _DashedRoundedRectPainter(
+            color: const Color(0xFFBFC9E8),
+            radius: 18,
+          ),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: Color(0xFFE6E8F8),
+                  child: Icon(
+                    Icons.add_rounded,
+                    color: StockColors.primary,
+                    size: 18,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'Add New Category',
+                  style: TextStyle(
+                    color: StockColors.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedRoundedRectPainter extends CustomPainter {
+  const _DashedRoundedRectPainter({
+    required this.color,
+    required this.radius,
+  });
+
+  final Color color;
+  final double radius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    final rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    final path = Path()..addRRect(rect);
+    final dashedPath = Path();
+
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      const dashWidth = 7.0;
+      const dashSpace = 5.0;
+
+      while (distance < metric.length) {
+        dashedPath.addPath(
+          metric.extractPath(distance, distance + dashWidth),
+          Offset.zero,
+        );
+        distance += dashWidth + dashSpace;
+      }
+    }
+
+    canvas.drawPath(dashedPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedRoundedRectPainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.radius != radius;
   }
 }
