@@ -83,6 +83,24 @@ class AppDatabase extends _$AppDatabase {
         .write(ProductsCompanion(quantity: Value(quantity)));
   }
 
+  Future<void> updateProduct({
+    required int productId,
+    required String name,
+    required int categoryId,
+    required int quantity,
+    required DateTime expiryDate,
+  }) {
+    return (update(products)..where((product) => product.id.equals(productId)))
+        .write(
+          ProductsCompanion(
+            name: Value(name),
+            categoryId: Value(categoryId),
+            quantity: Value(quantity),
+            expiryDate: Value(expiryDate),
+          ),
+        );
+  }
+
   Future<void> deleteProduct(int productId) {
     return (delete(products)..where((product) => product.id.equals(productId)))
         .go();

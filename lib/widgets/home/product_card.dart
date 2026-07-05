@@ -9,12 +9,14 @@ class ProductCard extends StatelessWidget {
     required this.product,
     this.onIncrement,
     this.onDelete,
+    this.onEdit,
     super.key,
   });
 
   final ProductItem product;
   final VoidCallback? onIncrement;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +70,10 @@ class ProductCard extends StatelessWidget {
                           isOutOfStock: isOutOfStock,
                         ),
                       ),
+                      if (onEdit != null) ...[
+                        ProductEditChip(onTap: onEdit!),
+                        const SizedBox(width: 8),
+                      ],
                       if (onIncrement != null) ...[
                         RoundActionButton(
                           icon: Icons.add_rounded,

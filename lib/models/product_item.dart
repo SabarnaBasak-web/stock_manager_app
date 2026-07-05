@@ -4,9 +4,11 @@ class ProductItem {
   const ProductItem({
     required this.id,
     required this.name,
+    required this.categoryId,
     required this.category,
     required this.icon,
     required this.quantity,
+    required this.expiryDate,
     required this.expiryText,
     required this.status,
     this.expiryLevel = ExpiryLevel.warning,
@@ -14,12 +16,16 @@ class ProductItem {
 
   final int id;
   final String name;
+  final int categoryId;
   final String category;
   final String icon;
   final int quantity;
+  final DateTime expiryDate;
   final String expiryText;
   final ProductStatus status;
   final ExpiryLevel expiryLevel;
+
+  bool get hasNoExpiryDate => expiryDate.year == 9999;
 
   factory ProductItem.fromDatabase(ProductWithCategory productWithCategory) {
     final product = productWithCategory.product;
@@ -32,9 +38,11 @@ class ProductItem {
     return ProductItem(
       id: product.id,
       name: product.name,
+      categoryId: category.id,
       category: category.name,
       icon: category.icon,
       quantity: product.quantity,
+      expiryDate: product.expiryDate,
       expiryText: hasNoExpiryDate
           ? 'No expiry'
           : _buildExpiryText(daysUntilExpiry),

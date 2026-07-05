@@ -155,6 +155,40 @@ class RoundActionButton extends StatelessWidget {
   }
 }
 
+class ProductEditChip extends StatelessWidget {
+  const ProductEditChip({required this.onTap, super.key});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Edit product',
+      child: Material(
+        color: Colors.transparent,
+        child: InkResponse(
+          onTap: onTap,
+          radius: 18,
+          customBorder: const CircleBorder(),
+          child: Container(
+            height: 28,
+            width: 28,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE9EEFF),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.edit_outlined,
+              size: 16,
+              color: StockColors.primary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _StatusBadge extends StatelessWidget {
   const _StatusBadge({required this.isOutOfStock});
 

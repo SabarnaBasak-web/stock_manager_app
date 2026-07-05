@@ -7,6 +7,7 @@ import '../models/category_filter.dart';
 import '../models/product_item.dart';
 import '../widgets/home/category_filter_list.dart';
 import '../widgets/home/empty_products.dart';
+import '../widgets/home/edit_product_sheet.dart';
 import '../widgets/home/product_card.dart';
 import '../widgets/home/stock_header.dart';
 
@@ -68,6 +69,20 @@ class _HomeScreenState extends State<HomeScreen> {
     await widget.database.updateProductQuantity(
       productId: product.id,
       quantity: product.quantity - 1,
+    );
+  }
+
+  Future<void> _editProduct(ProductItem product) async {
+    final wasUpdated = await showEditProductSheet(
+      context: context,
+      database: widget.database,
+      product: product,
+    );
+
+    if (wasUpdated != true || !mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Product updated.')),
     );
   }
 
@@ -164,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: ProductCard(
                           product: products[index],
+                          onEdit: () => _editProduct(products[index]),
                           onIncrement: () => _incrementProduct(
                             products[index],
                           ),
