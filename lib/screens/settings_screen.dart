@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-import '../core/app_info.dart';
 import '../core/stock_colors.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -196,26 +196,44 @@ class _VersionFooter extends StatelessWidget {
         ? const Color(0xFF8F98B5)
         : const Color(0xFF97A0B8);
 
-    return Column(
-      children: [
-        Text(
-          'Stock Manager',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Version ${AppInfo.appVersion} (${AppInfo.buildNumber})',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final packageInfo = snapshot.data;
+        final appName = (packageInfo?.appName.isNotEmpty ?? false)
+            ? packageInfo!.appName
+            : 'Stock Manager';
+        final version = packageInfo?.version;
+        final buildNumber = packageInfo?.buildNumber;
+        final versionLabel =
+            version != null && buildNumber != null && buildNumber.isNotEmpty
+            ? 'Version $version ($buildNumber)'
+            : version != null
+            ? 'Version $version'
+            : 'Version';
+
+        return Column(
+          children: [
+            Text(
+              appName,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              versionLabel,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
