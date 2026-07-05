@@ -49,7 +49,7 @@ class ProductInfoSection extends StatelessWidget {
             final categories = snapshot.data ?? const [];
 
             return DropdownButtonFormField<int>(
-              value: selectedCategoryId,
+              initialValue: selectedCategoryId,
               isExpanded: true,
               dropdownColor: AddProductFormColors.inputFill,
               iconEnabledColor: AddProductFormColors.inputHint,

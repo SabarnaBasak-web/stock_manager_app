@@ -63,39 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _decrementProduct(ProductItem product) async {
-    if (product.quantity > 1) {
-      await widget.database.updateProductQuantity(
-        productId: product.id,
-        quantity: product.quantity - 1,
-      );
-      return;
-    }
+    if (product.quantity == 0) return;
 
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Delete product?'),
-          content: Text(
-            '${product.name} will be removed from your inventory.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+    await widget.database.updateProductQuantity(
+      productId: product.id,
+      quantity: product.quantity - 1,
     );
-
-    if (shouldDelete != true) return;
-
-    await widget.database.deleteProduct(product.id);
   }
 
   @override
