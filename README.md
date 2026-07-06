@@ -66,7 +66,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 
 - Products are stored with a name, category, quantity, and expiry date
 - Categories are automatically seeded on app startup if they do not already exist
-- "Expiring soon" currently means within the next 4 days
+- "Expiring soon" currently means within the next 30 days
 - Theme preference is restored when the app launches
 
 ## Testing

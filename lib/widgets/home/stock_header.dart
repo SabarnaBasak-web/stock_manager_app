@@ -12,6 +12,9 @@ class StockHeader extends StatelessWidget {
     required this.searchQuery,
     required this.onSearchChanged,
     required this.onSearchCleared,
+    required this.onProductsMetricTap,
+    required this.onOutOfStockMetricTap,
+    required this.onExpiringSoonMetricTap,
     super.key,
   });
 
@@ -20,6 +23,9 @@ class StockHeader extends StatelessWidget {
   final String searchQuery;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onSearchCleared;
+  final VoidCallback onProductsMetricTap;
+  final VoidCallback onOutOfStockMetricTap;
+  final VoidCallback onExpiringSoonMetricTap;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +124,7 @@ class StockHeader extends StatelessWidget {
                       icon: Icons.inventory_2_outlined,
                       value: metrics.totalProducts.toString(),
                       label: 'Products',
+                      onTap: onProductsMetricTap,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -127,6 +134,7 @@ class StockHeader extends StatelessWidget {
                       value: metrics.outOfStockProducts.toString(),
                       label: 'Out of Stock',
                       iconColor: const Color(0xFFFFA0A0),
+                      onTap: onOutOfStockMetricTap,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -136,6 +144,7 @@ class StockHeader extends StatelessWidget {
                       value: metrics.expiringSoonProducts.toString(),
                       label: 'Exp. Soon',
                       iconColor: const Color(0xFFFFD15B),
+                      onTap: onExpiringSoonMetricTap,
                     ),
                   ),
                 ],

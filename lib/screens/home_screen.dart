@@ -11,6 +11,8 @@ import '../widgets/home/edit_product_sheet.dart';
 import '../widgets/home/product_card.dart';
 import '../widgets/home/stock_header.dart';
 
+enum _HomeMetricFilter { products, outOfStock, expiringSoon }
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({required this.database, super.key});
 
@@ -22,12 +24,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   static const _searchDebounceDuration = Duration(milliseconds: 300);
+  static const _expiringSoonDuration = Duration(days: 30);
 
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
 
   int? _selectedCategoryId;
   String _searchQuery = '';
+  _HomeMetricFilter _selectedMetricFilter = _HomeMetricFilter.products;
 
   @override
   void dispose() {
@@ -86,6 +90,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _setMetricFilter(_HomeMetricFilter filter) {
+    if (_selectedMetricFilter == filter) return;
+
+    setState(() {
+      _selectedMetricFilter = filter;
+    });
+  }
+
+  bool _matchesSelectedMetricFilter(ProductWithCategory productRow) {
+    return switch (_selectedMetricFilter) {
+      _HomeMetricFilter.products => true,
+      _HomeMetricFilter.outOfStock => productRow.product.quantity == 0,
+      _HomeMetricFilter.expiringSoon => _isExpiringSoon(productRow.product),
+    };
+  }
+
+  bool _isExpiringSoon(Product product) {
+    if (product.expiryDate.year == 9999) {
+      return false;
+    }
+
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final expirySoonEnd = todayStart.add(_expiringSoonDuration);
+    final expiryDate = product.expiryDate;
+    final expiryDay = DateTime(
+      expiryDate.year,
+      expiryDate.month,
+      expiryDate.day,
+    );
+
+    return !expiryDay.isBefore(todayStart) && expiryDay.isBefore(expirySoonEnd);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,6 +138,12 @@ class _HomeScreenState extends State<HomeScreen> {
               searchQuery: _searchQuery,
               onSearchChanged: _updateSearchQuery,
               onSearchCleared: _clearSearchQuery,
+              onProductsMetricTap: () =>
+                  _setMetricFilter(_HomeMetricFilter.products),
+              onOutOfStockMetricTap: () =>
+                  _setMetricFilter(_HomeMetricFilter.outOfStock),
+              onExpiringSoonMetricTap: () =>
+                  _setMetricFilter(_HomeMetricFilter.expiringSoon),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -158,8 +202,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             productRow.product.name.toLowerCase().contains(
                               normalizedSearchQuery,
                             );
+                        final matchesMetricFilter =
+                            _matchesSelectedMetricFilter(productRow);
 
-                        return matchesCategory && matchesSearch;
+                        return matchesCategory &&
+                            matchesSearch &&
+                            matchesMetricFilter;
                       })
                       .map(ProductItem.fromDatabase)
                       .toList();
