@@ -9,6 +9,7 @@ class ProductCard extends StatelessWidget {
     required this.product,
     this.onIncrement,
     this.onDelete,
+    this.onRemove,
     this.onEdit,
     super.key,
   });
@@ -16,6 +17,7 @@ class ProductCard extends StatelessWidget {
   final ProductItem product;
   final VoidCallback? onIncrement;
   final VoidCallback? onDelete;
+  final VoidCallback? onRemove;
   final VoidCallback? onEdit;
 
   @override
@@ -24,8 +26,9 @@ class ProductCard extends StatelessWidget {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isOutOfStock = product.status == ProductStatus.outOfStock;
     final onIncrement = this.onIncrement;
-    final showDecrementButton = this.onDelete != null;
-    final onDelete = product.quantity > 0 ? this.onDelete : null;
+    final decrementProduct = product.quantity > 0 ? onDelete : null;
+    final showDecrementButton = onDelete != null;
+    final removeProduct = onRemove;
 
     return Container(
       height: 100,
@@ -92,8 +95,18 @@ class ProductCard extends StatelessWidget {
                               : 'Decrease quantity',
                           backgroundColor: const Color(0xFFFFF0F0),
                           iconColor: StockColors.red,
-                          onPressed: onDelete,
+                          onPressed: decrementProduct,
                         ),
+                      if (removeProduct != null) ...[
+                        if (showDecrementButton) const SizedBox(width: 10),
+                        RoundActionButton(
+                          icon: Icons.delete_forever_outlined,
+                          tooltip: 'Delete product',
+                          backgroundColor: const Color(0xFFFFF0F0),
+                          iconColor: StockColors.red,
+                          onPressed: removeProduct,
+                        ),
+                      ],
                     ],
                   ),
                   const Spacer(),

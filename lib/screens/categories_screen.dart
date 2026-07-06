@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/stock_colors.dart';
 import '../database/app_database.dart';
+import '../models/product_item.dart';
 import '../widgets/categories/add_category_sheet.dart';
 import '../widgets/categories/category_group_card.dart';
 import '../widgets/categories/category_metric_card.dart';
@@ -59,6 +60,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               : 'Remove products from ${category.name} before deleting it.',
         ),
       ),
+    );
+  }
+
+  Future<void> _deleteProduct(ProductItem product) async {
+    await widget.database.deleteProduct(product.id);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${product.name} deleted.')),
     );
   }
 
@@ -120,6 +131,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             },
                             onDelete: () =>
                                 _deleteCategory(categoryGroup.category),
+                            onDeleteProduct: _deleteProduct,
                           ),
                           const SizedBox(height: 12),
                         ],

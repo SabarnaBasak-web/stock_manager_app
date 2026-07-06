@@ -11,6 +11,7 @@ class CategoryGroupCard extends StatelessWidget {
     required this.isExpanded,
     required this.onToggle,
     required this.onDelete,
+    required this.onDeleteProduct,
     super.key,
   });
 
@@ -18,6 +19,7 @@ class CategoryGroupCard extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
+  final ValueChanged<ProductItem> onDeleteProduct;
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +157,10 @@ class CategoryGroupCard extends StatelessWidget {
                     for (final product in productItems)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: ProductCard(product: product),
+                        child: ProductCard(
+                          product: product,
+                          onRemove: () => onDeleteProduct(product),
+                        ),
                       ),
                   ],
                 ),
