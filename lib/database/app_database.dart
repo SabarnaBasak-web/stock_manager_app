@@ -108,28 +108,29 @@ class AppDatabase extends _$AppDatabase {
     required String unit,
     required DateTime expiryDate,
   }) {
-    return (update(products)..where((product) => product.id.equals(productId)))
-        .write(
-          ProductsCompanion(
-            name: Value(name),
-            categoryId: Value(categoryId),
-            quantity: Value(quantity),
-            unit: Value(unit),
-            expiryDate: Value(expiryDate),
-          ),
-        );
+    return (update(
+      products,
+    )..where((product) => product.id.equals(productId))).write(
+      ProductsCompanion(
+        name: Value(name),
+        categoryId: Value(categoryId),
+        quantity: Value(quantity),
+        unit: Value(unit),
+        expiryDate: Value(expiryDate),
+      ),
+    );
   }
 
   Future<void> deleteProduct(int productId) {
-    return (delete(products)..where((product) => product.id.equals(productId)))
-        .go();
+    return (delete(
+      products,
+    )..where((product) => product.id.equals(productId))).go();
   }
 
   Future<bool> deleteCategory(int categoryId) async {
-    final existingProducts =
-        await (select(
-          products,
-        )..where((product) => product.categoryId.equals(categoryId))).get();
+    final existingProducts = await (select(
+      products,
+    )..where((product) => product.categoryId.equals(categoryId))).get();
 
     if (existingProducts.isNotEmpty) {
       return false;
@@ -144,8 +145,7 @@ class AppDatabase extends _$AppDatabase {
   Stream<List<ProductWithCategory>> watchProducts() {
     final query = select(products).join([
       innerJoin(categories, categories.id.equalsExp(products.categoryId)),
-    ])
-      ..orderBy([OrderingTerm.desc(products.id)]);
+    ])..orderBy([OrderingTerm.desc(products.id)]);
 
     return query.watch().map((rows) {
       return rows.map((row) {
@@ -161,7 +161,7 @@ class AppDatabase extends _$AppDatabase {
     return select(products).watch().map((productList) {
       final today = DateTime.now();
       final todayStart = DateTime(today.year, today.month, today.day);
-      final expirySoonEnd = todayStart.add(const Duration(days: 4));
+      final expirySoonEnd = todayStart.add(const Duration(days: 30));
 
       final expiringSoonCount = productList.where((product) {
         final expiryDate = product.expiryDate;
@@ -187,13 +187,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Stream<List<CategoryWithProducts>> watchCategoriesWithProducts() {
-    final query = select(categories).join([
-      leftOuterJoin(products, products.categoryId.equalsExp(categories.id)),
-    ])
-      ..orderBy([
-        OrderingTerm.asc(categories.name),
-        OrderingTerm.desc(products.id),
-      ]);
+    final query =
+        select(categories).join([
+          leftOuterJoin(products, products.categoryId.equalsExp(categories.id)),
+        ])..orderBy([
+          OrderingTerm.asc(categories.name),
+          OrderingTerm.desc(products.id),
+        ]);
 
     return query.watch().map((rows) {
       final categoriesById = <int, CategoryWithProducts>{};
@@ -248,14 +248,14 @@ class AppDatabase extends _$AppDatabase {
 
         if (existingCategory.icon != category.icon ||
             existingCategory.colorHex != category.colorHex) {
-          await (update(categories)
-                ..where((table) => table.id.equals(existingCategory.id)))
-              .write(
-                CategoriesCompanion(
-                  icon: Value(category.icon),
-                  colorHex: Value(category.colorHex),
-                ),
-              );
+          await (update(
+            categories,
+          )..where((table) => table.id.equals(existingCategory.id))).write(
+            CategoriesCompanion(
+              icon: Value(category.icon),
+              colorHex: Value(category.colorHex),
+            ),
+          );
         }
       }
     });
@@ -263,10 +263,7 @@ class AppDatabase extends _$AppDatabase {
 }
 
 class ProductWithCategory {
-  const ProductWithCategory({
-    required this.product,
-    required this.category,
-  });
+  const ProductWithCategory({required this.product, required this.category});
 
   final Product product;
   final Category category;
@@ -285,10 +282,7 @@ class StockMetrics {
 }
 
 class CategoryWithProducts {
-  CategoryWithProducts({
-    required this.category,
-    required this.products,
-  });
+  CategoryWithProducts({required this.category, required this.products});
 
   final Category category;
   final List<ProductWithCategory> products;
