@@ -21,6 +21,7 @@ class Products extends Table {
   TextColumn get name => text()();
   IntColumn get categoryId => integer().references(Categories, #id)();
   IntColumn get quantity => integer()();
+  TextColumn get unit => text().withDefault(const Constant('units'))();
   DateTimeColumn get expiryDate => dateTime()();
 }
 
@@ -39,14 +40,30 @@ class AppDatabase extends _$AppDatabase {
     (name: 'Others', icon: '📦', colorHex: '#607D8B'),
   ];
 
+  static const defaultUnit = 'units';
+
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
         await migrator.addColumn(categories, categories.colorHex);
+      }
+
+      if (from < 3) {
+        await customStatement('''
+          CREATE TABLE IF NOT EXISTS product_backup_before_units_migration AS
+          SELECT id, name, category_id, quantity, expiry_date
+          FROM product
+        ''');
+        await migrator.addColumn(products, products.unit);
+        await customStatement("""
+          UPDATE product
+          SET unit = '$defaultUnit'
+          WHERE unit IS NULL OR TRIM(unit) = ''
+        """);
       }
     },
   );
@@ -88,6 +105,7 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     required int categoryId,
     required int quantity,
+    required String unit,
     required DateTime expiryDate,
   }) {
     return (update(products)..where((product) => product.id.equals(productId)))
@@ -96,6 +114,7 @@ class AppDatabase extends _$AppDatabase {
             name: Value(name),
             categoryId: Value(categoryId),
             quantity: Value(quantity),
+            unit: Value(unit),
             expiryDate: Value(expiryDate),
           ),
         );

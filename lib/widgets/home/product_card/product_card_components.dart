@@ -65,7 +65,7 @@ class ProductMetaRow extends StatelessWidget {
         ),
         const SizedBox(width: 5),
         Text(
-          '${product.quantity} units',
+          '${product.quantity} ${product.unit}',
           style: const TextStyle(
             color: Color(0xFF2C3456),
             fontSize: 11,
