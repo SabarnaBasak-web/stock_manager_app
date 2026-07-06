@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../database/app_database.dart';
@@ -22,7 +23,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _quantityController = TextEditingController(text: '0');
 
   int? _selectedCategoryId;
-  String _selectedUnit = 'units';
+  String _selectedUnit = AppDatabase.defaultUnit;
   DateTime? _expiryDate;
   bool _hasNoExpiryDate = false;
 
@@ -76,6 +77,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         name: _nameController.text.trim(),
         categoryId: _selectedCategoryId!,
         quantity: int.parse(_quantityController.text.trim()),
+        unit: Value(_selectedUnit),
         expiryDate: _expiryDate ?? DateTime(9999, 12, 31),
       ),
     );
@@ -95,7 +97,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _quantityController.text = '0';
     setState(() {
       _selectedCategoryId = null;
-      _selectedUnit = 'units';
+      _selectedUnit = AppDatabase.defaultUnit;
       _expiryDate = null;
       _hasNoExpiryDate = false;
     });

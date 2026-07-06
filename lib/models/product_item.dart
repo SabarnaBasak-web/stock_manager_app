@@ -8,6 +8,7 @@ class ProductItem {
     required this.category,
     required this.icon,
     required this.quantity,
+    required this.unit,
     required this.expiryDate,
     required this.expiryText,
     required this.status,
@@ -20,6 +21,7 @@ class ProductItem {
   final String category;
   final String icon;
   final int quantity;
+  final String unit;
   final DateTime expiryDate;
   final String expiryText;
   final ProductStatus status;
@@ -42,6 +44,7 @@ class ProductItem {
       category: category.name,
       icon: category.icon,
       quantity: product.quantity,
+      unit: product.unit,
       expiryDate: product.expiryDate,
       expiryText: hasNoExpiryDate
           ? 'No expiry'

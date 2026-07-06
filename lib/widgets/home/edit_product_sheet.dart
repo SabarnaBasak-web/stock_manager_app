@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../database/app_database.dart';
 import '../../models/product_item.dart';
-import '../add_product/add_product_form_widgets.dart';
 import '../add_product/expiry_date_section.dart';
 import '../add_product/product_info_section.dart';
+import '../add_product/stock_details_section.dart';
 
 Future<bool?> showEditProductSheet({
   required BuildContext context,
@@ -47,6 +47,7 @@ class _EditProductSheetState extends State<EditProductSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _quantityController;
   late int? _selectedCategoryId;
+  late String _selectedUnit;
   late DateTime? _expiryDate;
   late bool _hasNoExpiryDate;
 
@@ -58,15 +59,22 @@ class _EditProductSheetState extends State<EditProductSheet> {
       text: widget.product.quantity.toString(),
     );
     _selectedCategoryId = widget.product.categoryId;
+    _selectedUnit = widget.product.unit;
     _hasNoExpiryDate = widget.product.hasNoExpiryDate;
     _expiryDate = _hasNoExpiryDate ? null : widget.product.expiryDate;
+    _quantityController.addListener(_refreshStockStatus);
   }
 
   @override
   void dispose() {
+    _quantityController.removeListener(_refreshStockStatus);
     _nameController.dispose();
     _quantityController.dispose();
     super.dispose();
+  }
+
+  void _refreshStockStatus() {
+    setState(() {});
   }
 
   Future<void> _pickExpiryDate() async {
@@ -111,6 +119,7 @@ class _EditProductSheetState extends State<EditProductSheet> {
       name: _nameController.text.trim(),
       categoryId: _selectedCategoryId!,
       quantity: int.parse(_quantityController.text.trim()),
+      unit: _selectedUnit,
       expiryDate: _expiryDate ?? DateTime(9999, 12, 31),
     );
 
@@ -182,8 +191,12 @@ class _EditProductSheetState extends State<EditProductSheet> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    _EditQuantitySection(
+                    StockDetailsSection(
                       quantityController: _quantityController,
+                      selectedUnit: _selectedUnit,
+                      onUnitChanged: (unit) {
+                        setState(() => _selectedUnit = unit);
+                      },
                     ),
                     const SizedBox(height: 16),
                     ExpiryDateSection(
@@ -219,40 +232,6 @@ class _EditProductSheetState extends State<EditProductSheet> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _EditQuantitySection extends StatelessWidget {
-  const _EditQuantitySection({required this.quantityController});
-
-  final TextEditingController quantityController;
-
-  @override
-  Widget build(BuildContext context) {
-    return AddProductSectionCard(
-      title: 'STOCK DETAILS',
-      children: [
-        const AddProductFieldLabel('Quantity *'),
-        TextFormField(
-          controller: quantityController,
-          keyboardType: TextInputType.number,
-          style: const TextStyle(
-            color: AddProductFormColors.inputText,
-            fontWeight: FontWeight.w700,
-          ),
-          decoration: const AddProductInputDecoration(hintText: '0'),
-          validator: (value) {
-            final quantity = int.tryParse(value?.trim() ?? '');
-
-            if (quantity == null || quantity < 0) {
-              return 'Enter a valid quantity';
-            }
-
-            return null;
-          },
-        ),
-      ],
     );
   }
 }

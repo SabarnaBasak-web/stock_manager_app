@@ -345,6 +345,16 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('units'),
+  );
   static const VerificationMeta _expiryDateMeta = const VerificationMeta(
     'expiryDate',
   );
@@ -362,6 +372,7 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     name,
     categoryId,
     quantity,
+    unit,
     expiryDate,
   ];
   @override
@@ -403,6 +414,12 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     } else if (isInserting) {
       context.missing(_quantityMeta);
     }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
     if (data.containsKey('expiry_date')) {
       context.handle(
         _expiryDateMeta,
@@ -436,6 +453,10 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
         DriftSqlType.int,
         data['${effectivePrefix}quantity'],
       )!,
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
       expiryDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}expiry_date'],
@@ -454,12 +475,14 @@ class Product extends DataClass implements Insertable<Product> {
   final String name;
   final int categoryId;
   final int quantity;
+  final String unit;
   final DateTime expiryDate;
   const Product({
     required this.id,
     required this.name,
     required this.categoryId,
     required this.quantity,
+    required this.unit,
     required this.expiryDate,
   });
   @override
@@ -469,6 +492,7 @@ class Product extends DataClass implements Insertable<Product> {
     map['name'] = Variable<String>(name);
     map['category_id'] = Variable<int>(categoryId);
     map['quantity'] = Variable<int>(quantity);
+    map['unit'] = Variable<String>(unit);
     map['expiry_date'] = Variable<DateTime>(expiryDate);
     return map;
   }
@@ -479,6 +503,7 @@ class Product extends DataClass implements Insertable<Product> {
       name: Value(name),
       categoryId: Value(categoryId),
       quantity: Value(quantity),
+      unit: Value(unit),
       expiryDate: Value(expiryDate),
     );
   }
@@ -493,6 +518,7 @@ class Product extends DataClass implements Insertable<Product> {
       name: serializer.fromJson<String>(json['name']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
       quantity: serializer.fromJson<int>(json['quantity']),
+      unit: serializer.fromJson<String>(json['unit']),
       expiryDate: serializer.fromJson<DateTime>(json['expiryDate']),
     );
   }
@@ -504,6 +530,7 @@ class Product extends DataClass implements Insertable<Product> {
       'name': serializer.toJson<String>(name),
       'categoryId': serializer.toJson<int>(categoryId),
       'quantity': serializer.toJson<int>(quantity),
+      'unit': serializer.toJson<String>(unit),
       'expiryDate': serializer.toJson<DateTime>(expiryDate),
     };
   }
@@ -513,12 +540,14 @@ class Product extends DataClass implements Insertable<Product> {
     String? name,
     int? categoryId,
     int? quantity,
+    String? unit,
     DateTime? expiryDate,
   }) => Product(
     id: id ?? this.id,
     name: name ?? this.name,
     categoryId: categoryId ?? this.categoryId,
     quantity: quantity ?? this.quantity,
+    unit: unit ?? this.unit,
     expiryDate: expiryDate ?? this.expiryDate,
   );
   Product copyWithCompanion(ProductsCompanion data) {
@@ -529,6 +558,7 @@ class Product extends DataClass implements Insertable<Product> {
           ? data.categoryId.value
           : this.categoryId,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      unit: data.unit.present ? data.unit.value : this.unit,
       expiryDate: data.expiryDate.present
           ? data.expiryDate.value
           : this.expiryDate,
@@ -542,13 +572,15 @@ class Product extends DataClass implements Insertable<Product> {
           ..write('name: $name, ')
           ..write('categoryId: $categoryId, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('expiryDate: $expiryDate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, categoryId, quantity, expiryDate);
+  int get hashCode =>
+      Object.hash(id, name, categoryId, quantity, unit, expiryDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -557,6 +589,7 @@ class Product extends DataClass implements Insertable<Product> {
           other.name == this.name &&
           other.categoryId == this.categoryId &&
           other.quantity == this.quantity &&
+          other.unit == this.unit &&
           other.expiryDate == this.expiryDate);
 }
 
@@ -565,12 +598,14 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   final Value<String> name;
   final Value<int> categoryId;
   final Value<int> quantity;
+  final Value<String> unit;
   final Value<DateTime> expiryDate;
   const ProductsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
     this.expiryDate = const Value.absent(),
   });
   ProductsCompanion.insert({
@@ -578,6 +613,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     required String name,
     required int categoryId,
     required int quantity,
+    this.unit = const Value.absent(),
     required DateTime expiryDate,
   }) : name = Value(name),
        categoryId = Value(categoryId),
@@ -588,6 +624,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     Expression<String>? name,
     Expression<int>? categoryId,
     Expression<int>? quantity,
+    Expression<String>? unit,
     Expression<DateTime>? expiryDate,
   }) {
     return RawValuesInsertable({
@@ -595,6 +632,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
       if (name != null) 'name': name,
       if (categoryId != null) 'category_id': categoryId,
       if (quantity != null) 'quantity': quantity,
+      if (unit != null) 'unit': unit,
       if (expiryDate != null) 'expiry_date': expiryDate,
     });
   }
@@ -604,6 +642,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     Value<String>? name,
     Value<int>? categoryId,
     Value<int>? quantity,
+    Value<String>? unit,
     Value<DateTime>? expiryDate,
   }) {
     return ProductsCompanion(
@@ -611,6 +650,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
       name: name ?? this.name,
       categoryId: categoryId ?? this.categoryId,
       quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
       expiryDate: expiryDate ?? this.expiryDate,
     );
   }
@@ -630,6 +670,9 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     if (quantity.present) {
       map['quantity'] = Variable<int>(quantity.value);
     }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
     if (expiryDate.present) {
       map['expiry_date'] = Variable<DateTime>(expiryDate.value);
     }
@@ -643,6 +686,7 @@ class ProductsCompanion extends UpdateCompanion<Product> {
           ..write('name: $name, ')
           ..write('categoryId: $categoryId, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('expiryDate: $expiryDate')
           ..write(')'))
         .toString();
@@ -944,6 +988,7 @@ typedef $$ProductsTableCreateCompanionBuilder =
       required String name,
       required int categoryId,
       required int quantity,
+      Value<String> unit,
       required DateTime expiryDate,
     });
 typedef $$ProductsTableUpdateCompanionBuilder =
@@ -952,6 +997,7 @@ typedef $$ProductsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<int> categoryId,
       Value<int> quantity,
+      Value<String> unit,
       Value<DateTime> expiryDate,
     });
 
@@ -998,6 +1044,11 @@ class $$ProductsTableFilterComposer
 
   ColumnFilters<int> get quantity => $composableBuilder(
     column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1054,6 +1105,11 @@ class $$ProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get expiryDate => $composableBuilder(
     column: $table.expiryDate,
     builder: (column) => ColumnOrderings(column),
@@ -1100,6 +1156,9 @@ class $$ProductsTableAnnotationComposer
 
   GeneratedColumn<int> get quantity =>
       $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
 
   GeneratedColumn<DateTime> get expiryDate => $composableBuilder(
     column: $table.expiryDate,
@@ -1162,12 +1221,14 @@ class $$ProductsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<int> categoryId = const Value.absent(),
                 Value<int> quantity = const Value.absent(),
+                Value<String> unit = const Value.absent(),
                 Value<DateTime> expiryDate = const Value.absent(),
               }) => ProductsCompanion(
                 id: id,
                 name: name,
                 categoryId: categoryId,
                 quantity: quantity,
+                unit: unit,
                 expiryDate: expiryDate,
               ),
           createCompanionCallback:
@@ -1176,12 +1237,14 @@ class $$ProductsTableTableManager
                 required String name,
                 required int categoryId,
                 required int quantity,
+                Value<String> unit = const Value.absent(),
                 required DateTime expiryDate,
               }) => ProductsCompanion.insert(
                 id: id,
                 name: name,
                 categoryId: categoryId,
                 quantity: quantity,
+                unit: unit,
                 expiryDate: expiryDate,
               ),
           withReferenceMapper: (p0) => p0
